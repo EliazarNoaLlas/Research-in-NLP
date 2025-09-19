@@ -962,13 +962,6 @@ class BiologyNLPProcessor:
     """Procesador NLP especializado en biología espacial"""
 
     def __init__(self):
-        try:
-            # Cargar modelo ScispaCy
-            self.scispacy_model = spacy.load("en_core_sci_lg")
-        except OSError:
-            logger.warning(
-                "ScispaCy modelo no encontrado. Instalar con: pip install https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.1/en_core_sci_lg-0.5.1.tar.gz")
-            self.scispacy_model = None
 
         # Cargar BioBERT
         try:
@@ -1244,7 +1237,10 @@ async def main():
             # 4. Procesamiento NLP
             logger.info("Iniciando procesamiento NLP...")
             nlp_processor = BiologyNLPProcessor()
-            processed_articles = await nlp_processor.process_articles(validated_articles)
+            processed_articles = []
+            for article in validated_articles:
+                processed_article = await nlp_processor.process_single_article(article)
+                processed_articles.append(processed_article)
 
             # 5. Estandarizar formato
             logger.info("Estandarizando formato...")
