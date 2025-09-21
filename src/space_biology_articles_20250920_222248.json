@@ -1,0 +1,1285 @@
+[
+  {
+    "article_data": {
+      "title": "Spaceflight Modulates the Expression of Key Oxidative Stress and Cell Cycle Related Genes in Heart",
+      "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8396460/",
+      "pmcid": "PMC8396460",
+      "pmid": null,
+      "doi": null,
+      "authors": [],
+      "affiliations": [],
+      "journal": null,
+      "publication_date": null,
+      "abstract": null,
+      "full_text": null,
+      "keywords": [
+        "space",
+        "spaceflight"
+      ],
+      "mesh_terms": [],
+      "organisms": [],
+      "genes": [],
+      "proteins": [],
+      "conditions": [],
+      "experiments": [],
+      "measurements": [],
+      "quality_score": 0.5,
+      "extraction_timestamp": "2025-09-20 22:21:33.841858",
+      "extraction_source": "pmc_api"
+    },
+    "json_ld": {
+      "@context": {
+        "schema": "https://schema.org/",
+        "bio": "http://purl.obolibrary.org/obo/",
+        "dcterms": "http://purl.org/dc/terms/",
+        "foaf": "http://xmlns.com/foaf/0.1/"
+      },
+      "@id": "http://space-biology.org/article/PMC8396460",
+      "@type": "schema:ScholarlyArticle",
+      "schema:name": "Spaceflight Modulates the Expression of Key Oxidative Stress and Cell Cycle Related Genes in Heart",
+      "schema:url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8396460/",
+      "extraction_source": "pmc_api",
+      "schema:identifier": [
+        {
+          "@type": "schema:PropertyValue",
+          "schema:propertyID": "PMCID",
+          "schema:value": "PMC8396460"
+        }
+      ],
+      "schema:keywords": [
+        "space",
+        "spaceflight"
+      ]
+    },
+    "rdf_triples": [
+      [
+        "http://space-biology.org/keyword/3dd7e5a26da09df75e7b29c06ebcf77e",
+        "https://schema.org/name",
+        "spaceflight"
+      ],
+      [
+        "http://space-biology.org/article/PMC8396460",
+        "https://schema.org/keywords",
+        "http://space-biology.org/keyword/ff2364a0be3d20e46cc69efb36afe9a5"
+      ],
+      [
+        "http://space-biology.org/keyword/ff2364a0be3d20e46cc69efb36afe9a5",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/DefinedTerm"
+      ],
+      [
+        "http://space-biology.org/keyword/3dd7e5a26da09df75e7b29c06ebcf77e",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/DefinedTerm"
+      ],
+      [
+        "http://space-biology.org/article/PMC8396460",
+        "http://purl.obolibrary.org/obo/pmcid",
+        "PMC8396460"
+      ],
+      [
+        "http://space-biology.org/article/PMC8396460",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/ScholarlyArticle"
+      ],
+      [
+        "http://space-biology.org/article/PMC8396460",
+        "https://schema.org/name",
+        "Spaceflight Modulates the Expression of Key Oxidative Stress and Cell Cycle Related Genes in Heart"
+      ],
+      [
+        "http://space-biology.org/article/PMC8396460",
+        "https://schema.org/keywords",
+        "http://space-biology.org/keyword/3dd7e5a26da09df75e7b29c06ebcf77e"
+      ],
+      [
+        "http://space-biology.org/article/PMC8396460",
+        "https://schema.org/url",
+        "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8396460/"
+      ],
+      [
+        "http://space-biology.org/keyword/ff2364a0be3d20e46cc69efb36afe9a5",
+        "https://schema.org/name",
+        "space"
+      ]
+    ],
+    "graph_entities": {
+      "Article": {
+        "id": "http://space-biology.org/article/PMC8396460",
+        "title": "Spaceflight Modulates the Expression of Key Oxidative Stress and Cell Cycle Related Genes in Heart",
+        "date": null,
+        "journal": null,
+        "quality_score": 0.5,
+        "extraction_source": "pmc_api"
+      },
+      "Authors": [],
+      "Keywords": [
+        "space",
+        "spaceflight"
+      ],
+      "MeshTerms": [],
+      "Organisms": [],
+      "Genes": [],
+      "Proteins": [],
+      "Conditions": [],
+      "Experiments": [],
+      "Measurements": []
+    }
+  },
+  {
+    "article_data": {
+      "title": "Stem Cell Health and Tissue Regeneration in Microgravity",
+      "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11988870/",
+      "pmcid": "PMC11988870",
+      "pmid": null,
+      "doi": null,
+      "authors": [],
+      "affiliations": [],
+      "journal": null,
+      "publication_date": null,
+      "abstract": null,
+      "full_text": null,
+      "keywords": [
+        "tissue",
+        "microgravity"
+      ],
+      "mesh_terms": [],
+      "organisms": [
+        "rat"
+      ],
+      "genes": [],
+      "proteins": [],
+      "conditions": [],
+      "experiments": [],
+      "measurements": [],
+      "quality_score": 0.5,
+      "extraction_timestamp": "2025-09-20 22:21:31.486969",
+      "extraction_source": "pmc_api"
+    },
+    "json_ld": {
+      "@context": {
+        "schema": "https://schema.org/",
+        "bio": "http://purl.obolibrary.org/obo/",
+        "dcterms": "http://purl.org/dc/terms/",
+        "foaf": "http://xmlns.com/foaf/0.1/"
+      },
+      "@id": "http://space-biology.org/article/PMC11988870",
+      "@type": "schema:ScholarlyArticle",
+      "schema:name": "Stem Cell Health and Tissue Regeneration in Microgravity",
+      "schema:url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11988870/",
+      "extraction_source": "pmc_api",
+      "schema:identifier": [
+        {
+          "@type": "schema:PropertyValue",
+          "schema:propertyID": "PMCID",
+          "schema:value": "PMC11988870"
+        }
+      ],
+      "schema:keywords": [
+        "tissue",
+        "microgravity"
+      ]
+    },
+    "rdf_triples": [
+      [
+        "http://space-biology.org/keyword/93aefb91c3e9c0d93f8bee80564aac61",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/DefinedTerm"
+      ],
+      [
+        "http://space-biology.org/keyword/93aefb91c3e9c0d93f8bee80564aac61",
+        "https://schema.org/name",
+        "tissue"
+      ],
+      [
+        "http://space-biology.org/article/PMC11988870",
+        "https://schema.org/name",
+        "Stem Cell Health and Tissue Regeneration in Microgravity"
+      ],
+      [
+        "http://space-biology.org/article/PMC11988870",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/ScholarlyArticle"
+      ],
+      [
+        "http://space-biology.org/article/PMC11988870",
+        "https://schema.org/keywords",
+        "http://space-biology.org/keyword/93aefb91c3e9c0d93f8bee80564aac61"
+      ],
+      [
+        "http://space-biology.org/article/PMC11988870",
+        "http://purl.obolibrary.org/obo/pmcid",
+        "PMC11988870"
+      ],
+      [
+        "http://space-biology.org/organism/e756f6aafafdef4debdb5e49bcbd3f11",
+        "https://schema.org/name",
+        "rat"
+      ],
+      [
+        "http://space-biology.org/organism/e756f6aafafdef4debdb5e49bcbd3f11",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "http://purl.obolibrary.org/obo/Organism"
+      ],
+      [
+        "http://space-biology.org/keyword/8321e0b47cc0b5ace1b4fd8473c2d5fa",
+        "https://schema.org/name",
+        "microgravity"
+      ],
+      [
+        "http://space-biology.org/keyword/8321e0b47cc0b5ace1b4fd8473c2d5fa",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/DefinedTerm"
+      ],
+      [
+        "http://space-biology.org/article/PMC11988870",
+        "http://space-biology.org/ontology/studiesOrganism",
+        "http://space-biology.org/organism/e756f6aafafdef4debdb5e49bcbd3f11"
+      ],
+      [
+        "http://space-biology.org/article/PMC11988870",
+        "https://schema.org/keywords",
+        "http://space-biology.org/keyword/8321e0b47cc0b5ace1b4fd8473c2d5fa"
+      ],
+      [
+        "http://space-biology.org/article/PMC11988870",
+        "https://schema.org/url",
+        "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11988870/"
+      ]
+    ],
+    "graph_entities": {
+      "Article": {
+        "id": "http://space-biology.org/article/PMC11988870",
+        "title": "Stem Cell Health and Tissue Regeneration in Microgravity",
+        "date": null,
+        "journal": null,
+        "quality_score": 0.5,
+        "extraction_source": "pmc_api"
+      },
+      "Authors": [],
+      "Keywords": [
+        "tissue",
+        "microgravity"
+      ],
+      "MeshTerms": [],
+      "Organisms": [
+        "rat"
+      ],
+      "Genes": [],
+      "Proteins": [],
+      "Conditions": [],
+      "Experiments": [],
+      "Measurements": []
+    }
+  },
+  {
+    "article_data": {
+      "title": "Microgravity validation of a novel system for RNA isolation and multiplex quantitative real time PCR analysis of gene expression on the International Space Station",
+      "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5587110/",
+      "pmcid": "PMC5587110",
+      "pmid": null,
+      "doi": null,
+      "authors": [],
+      "affiliations": [],
+      "journal": null,
+      "publication_date": null,
+      "abstract": null,
+      "full_text": null,
+      "keywords": [
+        "space",
+        "microgravity",
+        "gene expression"
+      ],
+      "mesh_terms": [],
+      "organisms": [],
+      "genes": [],
+      "proteins": [],
+      "conditions": [],
+      "experiments": [],
+      "measurements": [],
+      "quality_score": 0.5,
+      "extraction_timestamp": "2025-09-20 22:21:38.321176",
+      "extraction_source": "pmc_api"
+    },
+    "json_ld": {
+      "@context": {
+        "schema": "https://schema.org/",
+        "bio": "http://purl.obolibrary.org/obo/",
+        "dcterms": "http://purl.org/dc/terms/",
+        "foaf": "http://xmlns.com/foaf/0.1/"
+      },
+      "@id": "http://space-biology.org/article/PMC5587110",
+      "@type": "schema:ScholarlyArticle",
+      "schema:name": "Microgravity validation of a novel system for RNA isolation and multiplex quantitative real time PCR analysis of gene expression on the International Space Station",
+      "schema:url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5587110/",
+      "extraction_source": "pmc_api",
+      "schema:identifier": [
+        {
+          "@type": "schema:PropertyValue",
+          "schema:propertyID": "PMCID",
+          "schema:value": "PMC5587110"
+        }
+      ],
+      "schema:keywords": [
+        "space",
+        "microgravity",
+        "gene expression"
+      ]
+    },
+    "rdf_triples": [
+      [
+        "http://space-biology.org/article/PMC5587110",
+        "https://schema.org/name",
+        "Microgravity validation of a novel system for RNA isolation and multiplex quantitative real time PCR analysis of gene expression on the International Space Station"
+      ],
+      [
+        "http://space-biology.org/keyword/762d421de23db318924ffaa3bef625f5",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/DefinedTerm"
+      ],
+      [
+        "http://space-biology.org/article/PMC5587110",
+        "http://purl.obolibrary.org/obo/pmcid",
+        "PMC5587110"
+      ],
+      [
+        "http://space-biology.org/keyword/ff2364a0be3d20e46cc69efb36afe9a5",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/DefinedTerm"
+      ],
+      [
+        "http://space-biology.org/article/PMC5587110",
+        "https://schema.org/keywords",
+        "http://space-biology.org/keyword/8321e0b47cc0b5ace1b4fd8473c2d5fa"
+      ],
+      [
+        "http://space-biology.org/article/PMC5587110",
+        "https://schema.org/url",
+        "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5587110/"
+      ],
+      [
+        "http://space-biology.org/article/PMC5587110",
+        "https://schema.org/keywords",
+        "http://space-biology.org/keyword/ff2364a0be3d20e46cc69efb36afe9a5"
+      ],
+      [
+        "http://space-biology.org/article/PMC5587110",
+        "https://schema.org/keywords",
+        "http://space-biology.org/keyword/762d421de23db318924ffaa3bef625f5"
+      ],
+      [
+        "http://space-biology.org/article/PMC5587110",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/ScholarlyArticle"
+      ],
+      [
+        "http://space-biology.org/keyword/8321e0b47cc0b5ace1b4fd8473c2d5fa",
+        "https://schema.org/name",
+        "microgravity"
+      ],
+      [
+        "http://space-biology.org/keyword/ff2364a0be3d20e46cc69efb36afe9a5",
+        "https://schema.org/name",
+        "space"
+      ],
+      [
+        "http://space-biology.org/keyword/8321e0b47cc0b5ace1b4fd8473c2d5fa",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/DefinedTerm"
+      ],
+      [
+        "http://space-biology.org/keyword/762d421de23db318924ffaa3bef625f5",
+        "https://schema.org/name",
+        "gene expression"
+      ]
+    ],
+    "graph_entities": {
+      "Article": {
+        "id": "http://space-biology.org/article/PMC5587110",
+        "title": "Microgravity validation of a novel system for RNA isolation and multiplex quantitative real time PCR analysis of gene expression on the International Space Station",
+        "date": null,
+        "journal": null,
+        "quality_score": 0.5,
+        "extraction_source": "pmc_api"
+      },
+      "Authors": [],
+      "Keywords": [
+        "space",
+        "microgravity",
+        "gene expression"
+      ],
+      "MeshTerms": [],
+      "Organisms": [],
+      "Genes": [],
+      "Proteins": [],
+      "Conditions": [],
+      "Experiments": [],
+      "Measurements": []
+    }
+  },
+  {
+    "article_data": {
+      "title": "Microgravity induces pelvic bone loss through osteoclastic activity, osteocytic osteolysis, and osteoblastic cell cycle inhibition by CDKN1a/p21",
+      "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3630201/",
+      "pmcid": "PMC3630201",
+      "pmid": null,
+      "doi": null,
+      "authors": [],
+      "affiliations": [],
+      "journal": null,
+      "publication_date": null,
+      "abstract": null,
+      "full_text": null,
+      "keywords": [
+        "microgravity",
+        "bone loss"
+      ],
+      "mesh_terms": [],
+      "organisms": [],
+      "genes": [],
+      "proteins": [],
+      "conditions": [],
+      "experiments": [],
+      "measurements": [],
+      "quality_score": 0.5,
+      "extraction_timestamp": "2025-09-20 22:22:01.451620",
+      "extraction_source": "pmc_api"
+    },
+    "json_ld": {
+      "@context": {
+        "schema": "https://schema.org/",
+        "bio": "http://purl.obolibrary.org/obo/",
+        "dcterms": "http://purl.org/dc/terms/",
+        "foaf": "http://xmlns.com/foaf/0.1/"
+      },
+      "@id": "http://space-biology.org/article/PMC3630201",
+      "@type": "schema:ScholarlyArticle",
+      "schema:name": "Microgravity induces pelvic bone loss through osteoclastic activity, osteocytic osteolysis, and osteoblastic cell cycle inhibition by CDKN1a/p21",
+      "schema:url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3630201/",
+      "extraction_source": "pmc_api",
+      "schema:identifier": [
+        {
+          "@type": "schema:PropertyValue",
+          "schema:propertyID": "PMCID",
+          "schema:value": "PMC3630201"
+        }
+      ],
+      "schema:keywords": [
+        "microgravity",
+        "bone loss"
+      ]
+    },
+    "rdf_triples": [
+      [
+        "http://space-biology.org/article/PMC3630201",
+        "http://purl.obolibrary.org/obo/pmcid",
+        "PMC3630201"
+      ],
+      [
+        "http://space-biology.org/keyword/563b2a44e76eb4ff38be5f5cb874f8bb",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/DefinedTerm"
+      ],
+      [
+        "http://space-biology.org/article/PMC3630201",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/ScholarlyArticle"
+      ],
+      [
+        "http://space-biology.org/article/PMC3630201",
+        "https://schema.org/keywords",
+        "http://space-biology.org/keyword/8321e0b47cc0b5ace1b4fd8473c2d5fa"
+      ],
+      [
+        "http://space-biology.org/article/PMC3630201",
+        "https://schema.org/name",
+        "Microgravity induces pelvic bone loss through osteoclastic activity, osteocytic osteolysis, and osteoblastic cell cycle inhibition by CDKN1a/p21"
+      ],
+      [
+        "http://space-biology.org/article/PMC3630201",
+        "https://schema.org/keywords",
+        "http://space-biology.org/keyword/563b2a44e76eb4ff38be5f5cb874f8bb"
+      ],
+      [
+        "http://space-biology.org/article/PMC3630201",
+        "https://schema.org/url",
+        "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3630201/"
+      ],
+      [
+        "http://space-biology.org/keyword/8321e0b47cc0b5ace1b4fd8473c2d5fa",
+        "https://schema.org/name",
+        "microgravity"
+      ],
+      [
+        "http://space-biology.org/keyword/8321e0b47cc0b5ace1b4fd8473c2d5fa",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/DefinedTerm"
+      ],
+      [
+        "http://space-biology.org/keyword/563b2a44e76eb4ff38be5f5cb874f8bb",
+        "https://schema.org/name",
+        "bone loss"
+      ]
+    ],
+    "graph_entities": {
+      "Article": {
+        "id": "http://space-biology.org/article/PMC3630201",
+        "title": "Microgravity induces pelvic bone loss through osteoclastic activity, osteocytic osteolysis, and osteoblastic cell cycle inhibition by CDKN1a/p21",
+        "date": null,
+        "journal": null,
+        "quality_score": 0.5,
+        "extraction_source": "pmc_api"
+      },
+      "Authors": [],
+      "Keywords": [
+        "microgravity",
+        "bone loss"
+      ],
+      "MeshTerms": [],
+      "Organisms": [],
+      "Genes": [],
+      "Proteins": [],
+      "Conditions": [],
+      "Experiments": [],
+      "Measurements": []
+    }
+  },
+  {
+    "article_data": {
+      "title": "High-precision method for cyclic loading of small-animal vertebrae to assess bone quality.",
+      "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6222041/",
+      "pmcid": "PMC6222041",
+      "pmid": null,
+      "doi": null,
+      "authors": [],
+      "affiliations": [],
+      "journal": null,
+      "publication_date": null,
+      "abstract": null,
+      "full_text": null,
+      "keywords": [],
+      "mesh_terms": [],
+      "organisms": [],
+      "genes": [],
+      "proteins": [],
+      "conditions": [],
+      "experiments": [],
+      "measurements": [],
+      "quality_score": 0.4,
+      "extraction_timestamp": "2025-09-20 22:21:58.099359",
+      "extraction_source": "pmc_api"
+    },
+    "json_ld": {
+      "@context": {
+        "schema": "https://schema.org/",
+        "bio": "http://purl.obolibrary.org/obo/",
+        "dcterms": "http://purl.org/dc/terms/",
+        "foaf": "http://xmlns.com/foaf/0.1/"
+      },
+      "@id": "http://space-biology.org/article/PMC6222041",
+      "@type": "schema:ScholarlyArticle",
+      "schema:name": "High-precision method for cyclic loading of small-animal vertebrae to assess bone quality.",
+      "schema:url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6222041/",
+      "extraction_source": "pmc_api",
+      "schema:identifier": [
+        {
+          "@type": "schema:PropertyValue",
+          "schema:propertyID": "PMCID",
+          "schema:value": "PMC6222041"
+        }
+      ]
+    },
+    "rdf_triples": [
+      [
+        "http://space-biology.org/article/PMC6222041",
+        "https://schema.org/url",
+        "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6222041/"
+      ],
+      [
+        "http://space-biology.org/article/PMC6222041",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/ScholarlyArticle"
+      ],
+      [
+        "http://space-biology.org/article/PMC6222041",
+        "http://purl.obolibrary.org/obo/pmcid",
+        "PMC6222041"
+      ],
+      [
+        "http://space-biology.org/article/PMC6222041",
+        "https://schema.org/name",
+        "High-precision method for cyclic loading of small-animal vertebrae to assess bone quality."
+      ]
+    ],
+    "graph_entities": {
+      "Article": {
+        "id": "http://space-biology.org/article/PMC6222041",
+        "title": "High-precision method for cyclic loading of small-animal vertebrae to assess bone quality.",
+        "date": null,
+        "journal": null,
+        "quality_score": 0.4,
+        "extraction_source": "pmc_api"
+      },
+      "Authors": [],
+      "Keywords": [],
+      "MeshTerms": [],
+      "Organisms": [],
+      "Genes": [],
+      "Proteins": [],
+      "Conditions": [],
+      "Experiments": [],
+      "Measurements": []
+    }
+  },
+  {
+    "article_data": {
+      "title": "From the bench to exploration medicine: NASA life sciences translational research for human exploration and habitation missions.",
+      "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5460236/",
+      "pmcid": "PMC5460236",
+      "pmid": null,
+      "doi": null,
+      "authors": [],
+      "affiliations": [],
+      "journal": null,
+      "publication_date": null,
+      "abstract": null,
+      "full_text": null,
+      "keywords": [],
+      "mesh_terms": [],
+      "organisms": [
+        "rat",
+        "human"
+      ],
+      "genes": [],
+      "proteins": [],
+      "conditions": [],
+      "experiments": [],
+      "measurements": [],
+      "quality_score": 0.5,
+      "extraction_timestamp": "2025-09-20 22:22:06.862889",
+      "extraction_source": "pmc_api"
+    },
+    "json_ld": {
+      "@context": {
+        "schema": "https://schema.org/",
+        "bio": "http://purl.obolibrary.org/obo/",
+        "dcterms": "http://purl.org/dc/terms/",
+        "foaf": "http://xmlns.com/foaf/0.1/"
+      },
+      "@id": "http://space-biology.org/article/PMC5460236",
+      "@type": "schema:ScholarlyArticle",
+      "schema:name": "From the bench to exploration medicine: NASA life sciences translational research for human exploration and habitation missions.",
+      "schema:url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5460236/",
+      "extraction_source": "pmc_api",
+      "schema:identifier": [
+        {
+          "@type": "schema:PropertyValue",
+          "schema:propertyID": "PMCID",
+          "schema:value": "PMC5460236"
+        }
+      ]
+    },
+    "rdf_triples": [
+      [
+        "http://space-biology.org/article/PMC5460236",
+        "http://space-biology.org/ontology/studiesOrganism",
+        "http://space-biology.org/organism/99e9bae675b12967251c175696f00a70"
+      ],
+      [
+        "http://space-biology.org/article/PMC5460236",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/ScholarlyArticle"
+      ],
+      [
+        "http://space-biology.org/organism/99e9bae675b12967251c175696f00a70",
+        "https://schema.org/name",
+        "human"
+      ],
+      [
+        "http://space-biology.org/article/PMC5460236",
+        "http://purl.obolibrary.org/obo/pmcid",
+        "PMC5460236"
+      ],
+      [
+        "http://space-biology.org/organism/99e9bae675b12967251c175696f00a70",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "http://purl.obolibrary.org/obo/Organism"
+      ],
+      [
+        "http://space-biology.org/organism/e756f6aafafdef4debdb5e49bcbd3f11",
+        "https://schema.org/name",
+        "rat"
+      ],
+      [
+        "http://space-biology.org/organism/e756f6aafafdef4debdb5e49bcbd3f11",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "http://purl.obolibrary.org/obo/Organism"
+      ],
+      [
+        "http://space-biology.org/article/PMC5460236",
+        "https://schema.org/url",
+        "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5460236/"
+      ],
+      [
+        "http://space-biology.org/article/PMC5460236",
+        "https://schema.org/name",
+        "From the bench to exploration medicine: NASA life sciences translational research for human exploration and habitation missions."
+      ],
+      [
+        "http://space-biology.org/article/PMC5460236",
+        "http://space-biology.org/ontology/studiesOrganism",
+        "http://space-biology.org/organism/e756f6aafafdef4debdb5e49bcbd3f11"
+      ]
+    ],
+    "graph_entities": {
+      "Article": {
+        "id": "http://space-biology.org/article/PMC5460236",
+        "title": "From the bench to exploration medicine: NASA life sciences translational research for human exploration and habitation missions.",
+        "date": null,
+        "journal": null,
+        "quality_score": 0.5,
+        "extraction_source": "pmc_api"
+      },
+      "Authors": [],
+      "Keywords": [],
+      "MeshTerms": [],
+      "Organisms": [
+        "rat",
+        "human"
+      ],
+      "Genes": [],
+      "Proteins": [],
+      "Conditions": [],
+      "Experiments": [],
+      "Measurements": []
+    }
+  },
+  {
+    "article_data": {
+      "title": "Dose- and Ion-Dependent Effects in the Oxidative Stress Response to Space-Like Radiation Exposure in the Skeletal System",
+      "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5666799/",
+      "pmcid": "PMC5666799",
+      "pmid": null,
+      "doi": null,
+      "authors": [],
+      "affiliations": [],
+      "journal": null,
+      "publication_date": null,
+      "abstract": null,
+      "full_text": null,
+      "keywords": [
+        "space",
+        "radiation"
+      ],
+      "mesh_terms": [],
+      "organisms": [],
+      "genes": [],
+      "proteins": [],
+      "conditions": [],
+      "experiments": [],
+      "measurements": [],
+      "quality_score": 0.5,
+      "extraction_timestamp": "2025-09-20 22:22:24.213184",
+      "extraction_source": "pmc_api"
+    },
+    "json_ld": {
+      "@context": {
+        "schema": "https://schema.org/",
+        "bio": "http://purl.obolibrary.org/obo/",
+        "dcterms": "http://purl.org/dc/terms/",
+        "foaf": "http://xmlns.com/foaf/0.1/"
+      },
+      "@id": "http://space-biology.org/article/PMC5666799",
+      "@type": "schema:ScholarlyArticle",
+      "schema:name": "Dose- and Ion-Dependent Effects in the Oxidative Stress Response to Space-Like Radiation Exposure in the Skeletal System",
+      "schema:url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5666799/",
+      "extraction_source": "pmc_api",
+      "schema:identifier": [
+        {
+          "@type": "schema:PropertyValue",
+          "schema:propertyID": "PMCID",
+          "schema:value": "PMC5666799"
+        }
+      ],
+      "schema:keywords": [
+        "space",
+        "radiation"
+      ]
+    },
+    "rdf_triples": [
+      [
+        "http://space-biology.org/article/PMC5666799",
+        "https://schema.org/keywords",
+        "http://space-biology.org/keyword/ff2364a0be3d20e46cc69efb36afe9a5"
+      ],
+      [
+        "http://space-biology.org/keyword/ac8029ea78f88ce74c4a1d730e67c78a",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/DefinedTerm"
+      ],
+      [
+        "http://space-biology.org/keyword/ff2364a0be3d20e46cc69efb36afe9a5",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/DefinedTerm"
+      ],
+      [
+        "http://space-biology.org/article/PMC5666799",
+        "https://schema.org/url",
+        "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5666799/"
+      ],
+      [
+        "http://space-biology.org/article/PMC5666799",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/ScholarlyArticle"
+      ],
+      [
+        "http://space-biology.org/article/PMC5666799",
+        "http://purl.obolibrary.org/obo/pmcid",
+        "PMC5666799"
+      ],
+      [
+        "http://space-biology.org/keyword/ac8029ea78f88ce74c4a1d730e67c78a",
+        "https://schema.org/name",
+        "radiation"
+      ],
+      [
+        "http://space-biology.org/article/PMC5666799",
+        "https://schema.org/keywords",
+        "http://space-biology.org/keyword/ac8029ea78f88ce74c4a1d730e67c78a"
+      ],
+      [
+        "http://space-biology.org/keyword/ff2364a0be3d20e46cc69efb36afe9a5",
+        "https://schema.org/name",
+        "space"
+      ],
+      [
+        "http://space-biology.org/article/PMC5666799",
+        "https://schema.org/name",
+        "Dose- and Ion-Dependent Effects in the Oxidative Stress Response to Space-Like Radiation Exposure in the Skeletal System"
+      ]
+    ],
+    "graph_entities": {
+      "Article": {
+        "id": "http://space-biology.org/article/PMC5666799",
+        "title": "Dose- and Ion-Dependent Effects in the Oxidative Stress Response to Space-Like Radiation Exposure in the Skeletal System",
+        "date": null,
+        "journal": null,
+        "quality_score": 0.5,
+        "extraction_source": "pmc_api"
+      },
+      "Authors": [],
+      "Keywords": [
+        "space",
+        "radiation"
+      ],
+      "MeshTerms": [],
+      "Organisms": [],
+      "Genes": [],
+      "Proteins": [],
+      "Conditions": [],
+      "Experiments": [],
+      "Measurements": []
+    }
+  },
+  {
+    "article_data": {
+      "title": "Mice in Bion-M 1 space mission: training and selection",
+      "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4136787/",
+      "pmcid": "PMC4136787",
+      "pmid": null,
+      "doi": null,
+      "authors": [],
+      "affiliations": [],
+      "journal": null,
+      "publication_date": null,
+      "abstract": null,
+      "full_text": null,
+      "keywords": [
+        "space"
+      ],
+      "mesh_terms": [],
+      "organisms": [
+        "mice"
+      ],
+      "genes": [],
+      "proteins": [],
+      "conditions": [],
+      "experiments": [],
+      "measurements": [],
+      "quality_score": 0.5,
+      "extraction_timestamp": "2025-09-20 22:22:20.944708",
+      "extraction_source": "pmc_api"
+    },
+    "json_ld": {
+      "@context": {
+        "schema": "https://schema.org/",
+        "bio": "http://purl.obolibrary.org/obo/",
+        "dcterms": "http://purl.org/dc/terms/",
+        "foaf": "http://xmlns.com/foaf/0.1/"
+      },
+      "@id": "http://space-biology.org/article/PMC4136787",
+      "@type": "schema:ScholarlyArticle",
+      "schema:name": "Mice in Bion-M 1 space mission: training and selection",
+      "schema:url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4136787/",
+      "extraction_source": "pmc_api",
+      "schema:identifier": [
+        {
+          "@type": "schema:PropertyValue",
+          "schema:propertyID": "PMCID",
+          "schema:value": "PMC4136787"
+        }
+      ],
+      "schema:keywords": [
+        "space"
+      ]
+    },
+    "rdf_triples": [
+      [
+        "http://space-biology.org/article/PMC4136787",
+        "http://space-biology.org/ontology/studiesOrganism",
+        "http://space-biology.org/organism/51a75d7efc0fb0d097f684163a0db447"
+      ],
+      [
+        "http://space-biology.org/organism/51a75d7efc0fb0d097f684163a0db447",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "http://purl.obolibrary.org/obo/Organism"
+      ],
+      [
+        "http://space-biology.org/article/PMC4136787",
+        "https://schema.org/url",
+        "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4136787/"
+      ],
+      [
+        "http://space-biology.org/keyword/ff2364a0be3d20e46cc69efb36afe9a5",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/DefinedTerm"
+      ],
+      [
+        "http://space-biology.org/article/PMC4136787",
+        "https://schema.org/name",
+        "Mice in Bion-M 1 space mission: training and selection"
+      ],
+      [
+        "http://space-biology.org/article/PMC4136787",
+        "https://schema.org/keywords",
+        "http://space-biology.org/keyword/ff2364a0be3d20e46cc69efb36afe9a5"
+      ],
+      [
+        "http://space-biology.org/article/PMC4136787",
+        "http://purl.obolibrary.org/obo/pmcid",
+        "PMC4136787"
+      ],
+      [
+        "http://space-biology.org/keyword/ff2364a0be3d20e46cc69efb36afe9a5",
+        "https://schema.org/name",
+        "space"
+      ],
+      [
+        "http://space-biology.org/article/PMC4136787",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/ScholarlyArticle"
+      ],
+      [
+        "http://space-biology.org/organism/51a75d7efc0fb0d097f684163a0db447",
+        "https://schema.org/name",
+        "mice"
+      ]
+    ],
+    "graph_entities": {
+      "Article": {
+        "id": "http://space-biology.org/article/PMC4136787",
+        "title": "Mice in Bion-M 1 space mission: training and selection",
+        "date": null,
+        "journal": null,
+        "quality_score": 0.5,
+        "extraction_source": "pmc_api"
+      },
+      "Authors": [],
+      "Keywords": [
+        "space"
+      ],
+      "MeshTerms": [],
+      "Organisms": [
+        "mice"
+      ],
+      "Genes": [],
+      "Proteins": [],
+      "Conditions": [],
+      "Experiments": [],
+      "Measurements": []
+    }
+  },
+  {
+    "article_data": {
+      "title": "Effects of ex vivo ionizing radiation on collagen structure and whole-bone mechanical properties of mouse vertebrae.",
+      "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6813909/",
+      "pmcid": "PMC6813909",
+      "pmid": null,
+      "doi": null,
+      "authors": [],
+      "affiliations": [],
+      "journal": null,
+      "publication_date": null,
+      "abstract": null,
+      "full_text": null,
+      "keywords": [
+        "radiation"
+      ],
+      "mesh_terms": [],
+      "organisms": [
+        "mouse"
+      ],
+      "genes": [],
+      "proteins": [],
+      "conditions": [],
+      "experiments": [],
+      "measurements": [],
+      "quality_score": 0.5,
+      "extraction_timestamp": "2025-09-20 22:22:27.256910",
+      "extraction_source": "pmc_api"
+    },
+    "json_ld": {
+      "@context": {
+        "schema": "https://schema.org/",
+        "bio": "http://purl.obolibrary.org/obo/",
+        "dcterms": "http://purl.org/dc/terms/",
+        "foaf": "http://xmlns.com/foaf/0.1/"
+      },
+      "@id": "http://space-biology.org/article/PMC6813909",
+      "@type": "schema:ScholarlyArticle",
+      "schema:name": "Effects of ex vivo ionizing radiation on collagen structure and whole-bone mechanical properties of mouse vertebrae.",
+      "schema:url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6813909/",
+      "extraction_source": "pmc_api",
+      "schema:identifier": [
+        {
+          "@type": "schema:PropertyValue",
+          "schema:propertyID": "PMCID",
+          "schema:value": "PMC6813909"
+        }
+      ],
+      "schema:keywords": [
+        "radiation"
+      ]
+    },
+    "rdf_triples": [
+      [
+        "http://space-biology.org/organism/40203abe6e81ed98cbc97cdd6ec4f144",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "http://purl.obolibrary.org/obo/Organism"
+      ],
+      [
+        "http://space-biology.org/keyword/ac8029ea78f88ce74c4a1d730e67c78a",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/DefinedTerm"
+      ],
+      [
+        "http://space-biology.org/article/PMC6813909",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/ScholarlyArticle"
+      ],
+      [
+        "http://space-biology.org/article/PMC6813909",
+        "https://schema.org/url",
+        "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6813909/"
+      ],
+      [
+        "http://space-biology.org/article/PMC6813909",
+        "http://purl.obolibrary.org/obo/pmcid",
+        "PMC6813909"
+      ],
+      [
+        "http://space-biology.org/keyword/ac8029ea78f88ce74c4a1d730e67c78a",
+        "https://schema.org/name",
+        "radiation"
+      ],
+      [
+        "http://space-biology.org/organism/40203abe6e81ed98cbc97cdd6ec4f144",
+        "https://schema.org/name",
+        "mouse"
+      ],
+      [
+        "http://space-biology.org/article/PMC6813909",
+        "http://space-biology.org/ontology/studiesOrganism",
+        "http://space-biology.org/organism/40203abe6e81ed98cbc97cdd6ec4f144"
+      ],
+      [
+        "http://space-biology.org/article/PMC6813909",
+        "https://schema.org/keywords",
+        "http://space-biology.org/keyword/ac8029ea78f88ce74c4a1d730e67c78a"
+      ],
+      [
+        "http://space-biology.org/article/PMC6813909",
+        "https://schema.org/name",
+        "Effects of ex vivo ionizing radiation on collagen structure and whole-bone mechanical properties of mouse vertebrae."
+      ]
+    ],
+    "graph_entities": {
+      "Article": {
+        "id": "http://space-biology.org/article/PMC6813909",
+        "title": "Effects of ex vivo ionizing radiation on collagen structure and whole-bone mechanical properties of mouse vertebrae.",
+        "date": null,
+        "journal": null,
+        "quality_score": 0.5,
+        "extraction_source": "pmc_api"
+      },
+      "Authors": [],
+      "Keywords": [
+        "radiation"
+      ],
+      "MeshTerms": [],
+      "Organisms": [
+        "mouse"
+      ],
+      "Genes": [],
+      "Proteins": [],
+      "Conditions": [],
+      "Experiments": [],
+      "Measurements": []
+    }
+  },
+  {
+    "article_data": {
+      "title": "Microgravity Reduces the Differentiation and Regenerative Potential of Embryonic Stem Cells",
+      "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7998608/",
+      "pmcid": "PMC7998608",
+      "pmid": null,
+      "doi": null,
+      "authors": [],
+      "affiliations": [],
+      "journal": null,
+      "publication_date": null,
+      "abstract": null,
+      "full_text": null,
+      "keywords": [
+        "microgravity"
+      ],
+      "mesh_terms": [],
+      "organisms": [
+        "rat",
+        "cells"
+      ],
+      "genes": [],
+      "proteins": [],
+      "conditions": [],
+      "experiments": [],
+      "measurements": [],
+      "quality_score": 0.5,
+      "extraction_timestamp": "2025-09-20 22:22:48.745785",
+      "extraction_source": "pmc_api"
+    },
+    "json_ld": {
+      "@context": {
+        "schema": "https://schema.org/",
+        "bio": "http://purl.obolibrary.org/obo/",
+        "dcterms": "http://purl.org/dc/terms/",
+        "foaf": "http://xmlns.com/foaf/0.1/"
+      },
+      "@id": "http://space-biology.org/article/PMC7998608",
+      "@type": "schema:ScholarlyArticle",
+      "schema:name": "Microgravity Reduces the Differentiation and Regenerative Potential of Embryonic Stem Cells",
+      "schema:url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7998608/",
+      "extraction_source": "pmc_api",
+      "schema:identifier": [
+        {
+          "@type": "schema:PropertyValue",
+          "schema:propertyID": "PMCID",
+          "schema:value": "PMC7998608"
+        }
+      ],
+      "schema:keywords": [
+        "microgravity"
+      ]
+    },
+    "rdf_triples": [
+      [
+        "http://space-biology.org/article/PMC7998608",
+        "http://space-biology.org/ontology/studiesOrganism",
+        "http://space-biology.org/organism/5c203840dfcdf51dd7e33a72ea2f484f"
+      ],
+      [
+        "http://space-biology.org/article/PMC7998608",
+        "https://schema.org/keywords",
+        "http://space-biology.org/keyword/8321e0b47cc0b5ace1b4fd8473c2d5fa"
+      ],
+      [
+        "http://space-biology.org/article/PMC7998608",
+        "https://schema.org/name",
+        "Microgravity Reduces the Differentiation and Regenerative Potential of Embryonic Stem Cells"
+      ],
+      [
+        "http://space-biology.org/article/PMC7998608",
+        "http://space-biology.org/ontology/studiesOrganism",
+        "http://space-biology.org/organism/e756f6aafafdef4debdb5e49bcbd3f11"
+      ],
+      [
+        "http://space-biology.org/organism/5c203840dfcdf51dd7e33a72ea2f484f",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "http://purl.obolibrary.org/obo/Organism"
+      ],
+      [
+        "http://space-biology.org/article/PMC7998608",
+        "http://purl.obolibrary.org/obo/pmcid",
+        "PMC7998608"
+      ],
+      [
+        "http://space-biology.org/organism/e756f6aafafdef4debdb5e49bcbd3f11",
+        "https://schema.org/name",
+        "rat"
+      ],
+      [
+        "http://space-biology.org/organism/e756f6aafafdef4debdb5e49bcbd3f11",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "http://purl.obolibrary.org/obo/Organism"
+      ],
+      [
+        "http://space-biology.org/article/PMC7998608",
+        "https://schema.org/url",
+        "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7998608/"
+      ],
+      [
+        "http://space-biology.org/keyword/8321e0b47cc0b5ace1b4fd8473c2d5fa",
+        "https://schema.org/name",
+        "microgravity"
+      ],
+      [
+        "http://space-biology.org/keyword/8321e0b47cc0b5ace1b4fd8473c2d5fa",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/DefinedTerm"
+      ],
+      [
+        "http://space-biology.org/article/PMC7998608",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "https://schema.org/ScholarlyArticle"
+      ],
+      [
+        "http://space-biology.org/organism/5c203840dfcdf51dd7e33a72ea2f484f",
+        "https://schema.org/name",
+        "cells"
+      ]
+    ],
+    "graph_entities": {
+      "Article": {
+        "id": "http://space-biology.org/article/PMC7998608",
+        "title": "Microgravity Reduces the Differentiation and Regenerative Potential of Embryonic Stem Cells",
+        "date": null,
+        "journal": null,
+        "quality_score": 0.5,
+        "extraction_source": "pmc_api"
+      },
+      "Authors": [],
+      "Keywords": [
+        "microgravity"
+      ],
+      "MeshTerms": [],
+      "Organisms": [
+        "rat",
+        "cells"
+      ],
+      "Genes": [],
+      "Proteins": [],
+      "Conditions": [],
+      "Experiments": [],
+      "Measurements": []
+    }
+  }
+]
