@@ -58,7 +58,9 @@ class Article:
     measurements: List[str] = None
     quality_score: float = 0.0
     extraction_timestamp: datetime = None
-    extraction_source: str = "web_scraping"  # Nuevo campo para rastrear origen
+    extraction_source: str = "web_scraping"
+    llm_extracted: bool = False
+    llm_confidence_score: float = 0.0
 
     def __post_init__(self):
         if self.authors is None:
@@ -85,17 +87,323 @@ class Article:
             self.extraction_timestamp = datetime.now()
 
 
+class LLMDataExtractor:
+    """Extractor de datos usando APIs de LLMs gratuitas con fallbacks"""
+
+    def __init__(self):
+        self.llm_providers = {
+            'deepseek': {
+                'url': 'https://api.deepseek.com/v1/chat/completions',
+                'api_key_env': 'DEEPSEEK_API_KEY',
+                'model': 'deepseek-chat',
+                'enabled': True
+            },
+            'groq': {
+                'url': 'https://api.groq.com/openai/v1/chat/completions',
+                'api_key_env': 'GROQ_API_KEY',
+                'model': 'llama-3.1-8b-instant',
+                'enabled': True
+            },
+            'together': {
+                'url': 'https://api.together.xyz/v1/chat/completions',
+                'api_key_env': 'TOGETHER_API_KEY',
+                'model': 'meta-llama/Llama-3.2-3B-Instruct-Turbo',
+                'enabled': True
+            },
+            'perplexity': {
+                'url': 'https://api.perplexity.ai/chat/completions',
+                'api_key_env': 'PERPLEXITY_API_KEY',
+                'model': 'llama-3.1-sonar-small-128k-online',
+                'enabled': True
+            }
+        }
+
+        self.extraction_prompt = """
+You are a scientific data extraction expert specializing in space biology research. 
+Analyze the following scientific article text and extract structured information in JSON format.
+
+Text to analyze:
+{text}
+
+Please extract and return ONLY a valid JSON object with the following structure:
+{{
+    "title": "Article title",
+    "abstract": "Article abstract or summary",
+    "journal": "Journal name if found",
+    "authors": [
+        {{"name": "Author Name", "affiliation": "Institution if found"}}
+    ],
+    "keywords": ["keyword1", "keyword2"],
+    "organisms": ["organism1", "organism2"],
+    "genes": ["gene1", "gene2"],
+    "proteins": ["protein1", "protein2"],
+    "conditions": ["space condition1", "microgravity", "radiation"],
+    "experiments": ["experiment type1", "methodology"],
+    "measurements": ["measurement1 with units", "parameter2"],
+    "publication_date": "YYYY-MM-DD or null",
+    "doi": "DOI if found or null",
+    "confidence_score": 0.85
+}}
+
+Focus on space biology, microgravity research, and related fields. Return only valid JSON without explanations.
+"""
+
+    async def extract_with_llm(self, article_text: str, article_data: Dict) -> Optional[Article]:
+        """Extrae datos del artículo usando LLMs con múltiples proveedores de fallback"""
+
+        # Preparar texto para análisis (limitar longitud para APIs)
+        text_to_analyze = self._prepare_text_for_llm(article_text, article_data)
+
+        if not text_to_analyze.strip():
+            return None
+
+        # Intentar con cada proveedor de LLM
+        for provider_name, provider_config in self.llm_providers.items():
+            if not provider_config['enabled']:
+                continue
+
+            try:
+                logger.info(f"Intentando extracción con {provider_name}...")
+                extracted_data = await self._call_llm_api(provider_name, provider_config, text_to_analyze)
+
+                if extracted_data:
+                    article = self._create_article_from_llm_data(extracted_data, article_data)
+                    if article:
+                        article.extraction_source = f"llm_{provider_name}"
+                        article.llm_extracted = True
+                        logger.info(f"Extracción exitosa con {provider_name}")
+                        return article
+
+            except Exception as e:
+                logger.warning(f"Error con {provider_name}: {e}")
+                continue
+
+        logger.warning("Todos los proveedores LLM fallaron, usando extracción básica")
+        return None
+
+    def _prepare_text_for_llm(self, article_text: str, article_data: Dict) -> str:
+        """Prepara el texto del artículo para análisis LLM"""
+        text_parts = []
+
+        # Título
+        if article_data.get('title'):
+            text_parts.append(f"Title: {article_data['title']}")
+
+        # URL para contexto
+        if article_data.get('url'):
+            text_parts.append(f"Source URL: {article_data['url']}")
+
+        # Texto del artículo (limitado para APIs)
+        if article_text:
+            # Tomar los primeros 4000 caracteres para mantener dentro de límites de tokens
+            content = article_text[:4000]
+            text_parts.append(f"Content: {content}")
+
+        return "\n\n".join(text_parts)
+
+    async def _call_llm_api(self, provider_name: str, provider_config: Dict, text: str) -> Optional[Dict]:
+        """Llama a la API del proveedor LLM específico"""
+
+        # Verificar API key
+        api_key = os.getenv(provider_config['api_key_env'])
+        if not api_key:
+            logger.warning(f"API key no encontrada para {provider_name}: {provider_config['api_key_env']}")
+            return None
+
+        headers = {
+            'Authorization': f'Bearer {api_key}',
+            'Content-Type': 'application/json'
+        }
+
+        # Preparar payload según el proveedor
+        payload = {
+            'model': provider_config['model'],
+            'messages': [
+                {
+                    'role': 'user',
+                    'content': self.extraction_prompt.format(text=text)
+                }
+            ],
+            'temperature': 0.1,
+            'max_tokens': 1000
+        }
+
+        # Ajustes específicos por proveedor
+        if provider_name == 'groq':
+            payload['stream'] = False
+        elif provider_name == 'perplexity':
+            payload['return_citations'] = False
+            payload['return_images'] = False
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                        provider_config['url'],
+                        headers=headers,
+                        json=payload,
+                        timeout=aiohttp.ClientTimeout(total=30)
+                ) as response:
+
+                    if response.status == 200:
+                        data = await response.json()
+
+                        # Extraer contenido de la respuesta
+                        content = self._extract_content_from_response(data)
+                        if content:
+                            return self._parse_llm_json_response(content)
+                    else:
+                        logger.warning(f"{provider_name} API error: {response.status}")
+                        error_text = await response.text()
+                        logger.debug(f"Error details: {error_text}")
+
+        except asyncio.TimeoutError:
+            logger.warning(f"Timeout calling {provider_name} API")
+        except Exception as e:
+            logger.warning(f"Error calling {provider_name} API: {e}")
+
+        return None
+
+    def _extract_content_from_response(self, response_data: Dict) -> Optional[str]:
+        """Extrae el contenido de la respuesta del LLM"""
+        try:
+            if 'choices' in response_data and response_data['choices']:
+                choice = response_data['choices'][0]
+                if 'message' in choice:
+                    return choice['message']['content']
+                elif 'text' in choice:
+                    return choice['text']
+        except Exception as e:
+            logger.error(f"Error extracting content from LLM response: {e}")
+        return None
+
+    def _parse_llm_json_response(self, content: str) -> Optional[Dict]:
+        """Parsea la respuesta JSON del LLM"""
+        try:
+            # Limpiar contenido para extraer JSON
+            content = content.strip()
+
+            # Buscar JSON en el contenido
+            json_start = content.find('{')
+            json_end = content.rfind('}') + 1
+
+            if json_start != -1 and json_end > json_start:
+                json_content = content[json_start:json_end]
+                return json.loads(json_content)
+
+        except json.JSONDecodeError as e:
+            logger.warning(f"Error parsing LLM JSON response: {e}")
+            logger.debug(f"Content was: {content}")
+        except Exception as e:
+            logger.error(f"Error processing LLM response: {e}")
+
+        return None
+
+    def _create_article_from_llm_data(self, llm_data: Dict, original_data: Dict) -> Optional[Article]:
+        """Crea objeto Article desde los datos extraídos por LLM"""
+        try:
+            # Usar título original o extraído
+            title = llm_data.get('title', original_data.get('title', ''))
+            if not title:
+                return None
+
+            article = Article(
+                title=title,
+                url=original_data.get('url', ''),
+                pmcid=original_data.get('pmcid')
+            )
+
+            # Mapear datos extraídos por LLM
+            article.abstract = llm_data.get('abstract', '')
+            article.journal = llm_data.get('journal', '')
+            article.doi = llm_data.get('doi')
+            article.llm_confidence_score = float(llm_data.get('confidence_score', 0.0))
+
+            # Procesar fecha de publicación
+            pub_date = llm_data.get('publication_date')
+            if pub_date and pub_date != 'null':
+                try:
+                    article.publication_date = datetime.strptime(pub_date, '%Y-%m-%d')
+                except:
+                    pass
+
+            # Procesar autores
+            authors_data = llm_data.get('authors', [])
+            if isinstance(authors_data, list):
+                article.authors = [
+                    {
+                        'name': author.get('name', '') if isinstance(author, dict) else str(author),
+                        'affiliation': author.get('affiliation') if isinstance(author, dict) else None
+                    }
+                    for author in authors_data
+                    if author
+                ]
+
+            # Procesar listas de entidades
+            list_fields = ['keywords', 'organisms', 'genes', 'proteins', 'conditions', 'experiments', 'measurements']
+            for field in list_fields:
+                field_data = llm_data.get(field, [])
+                if isinstance(field_data, list):
+                    setattr(article, field, [str(item) for item in field_data if item])
+
+            article.quality_score = self._calculate_llm_quality_score(article)
+            return article
+
+        except Exception as e:
+            logger.error(f"Error creating article from LLM data: {e}")
+            return None
+
+    def _calculate_llm_quality_score(self, article: Article) -> float:
+        """Calcula score de calidad para artículo extraído por LLM"""
+        score = 0.0
+
+        # Título (obligatorio)
+        if article.title and len(article.title) > 10:
+            score += 0.2
+
+        # Abstract
+        if article.abstract and len(article.abstract) > 50:
+            score += 0.3
+
+        # Metadatos
+        if article.journal:
+            score += 0.1
+        if article.doi:
+            score += 0.1
+        if article.authors:
+            score += 0.1
+
+        # Entidades extraídas
+        entities_count = (
+                len(article.keywords or []) +
+                len(article.organisms or []) +
+                len(article.genes or []) +
+                len(article.conditions or [])
+        )
+
+        if entities_count > 5:
+            score += 0.15
+        elif entities_count > 0:
+            score += 0.1
+
+        # Bonus por confianza del LLM
+        if article.llm_confidence_score > 0.8:
+            score += 0.05
+
+        return min(score, 1.0)
+
+
 class DataIngestionPipeline:
-    """Pipeline completo de ingesta de datos científicos con fallbacks robustos"""
+    """Pipeline completo de ingesta de datos científicos con integración LLM"""
 
     def __init__(self):
         self.session = None
         self.processed_articles = []
         self.failed_extractions = []
         self.duplicate_detector = DuplicateDetector()
-        self.request_delay = 3.0  # Delay aumentado significativamente
-        self.api_fallback_enabled = True
-        self.test_mode = True  # Para crear artículos de prueba cuando falla todo
+        self.request_delay = 3.0
+        self.llm_extractor = LLMDataExtractor()
+        self.llm_enabled = True
+        self.test_mode = True
 
         # Cache para requests
         self.cached_session = requests_cache.CachedSession(
@@ -103,7 +411,7 @@ class DataIngestionPipeline:
             expire_after=3600
         )
 
-        # Headers más sofisticados para evitar detección
+        # Headers para web scraping
         self.headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
@@ -112,18 +420,13 @@ class DataIngestionPipeline:
             'DNT': '1',
             'Connection': 'keep-alive',
             'Upgrade-Insecure-Requests': '1',
-            'Sec-Fetch-Dest': 'document',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-Site': 'none',
-            'Sec-Fetch-User': '?1',
-            'Cache-Control': 'max-age=0'
         }
 
     async def __aenter__(self):
         """Context manager para gestión de sesión async"""
         connector = aiohttp.TCPConnector(
-            limit=10,  # Muy conservador
-            limit_per_host=3,  # Extremadamente conservador
+            limit=5,
+            limit_per_host=2,
             ttl_dns_cache=300,
             use_dns_cache=True,
             keepalive_timeout=60,
@@ -131,7 +434,7 @@ class DataIngestionPipeline:
         )
 
         timeout = aiohttp.ClientTimeout(
-            total=180,  # Timeout más largo
+            total=120,
             connect=30,
             sock_read=60
         )
@@ -148,7 +451,7 @@ class DataIngestionPipeline:
         """Cleanup de sesión async"""
         if self.session:
             await self.session.close()
-            await asyncio.sleep(1)  # Esperar cleanup completo
+            await asyncio.sleep(1)
 
     async def load_sb_publications_csv(self, csv_path: str = None) -> List[Dict]:
         """Carga el CSV de SB Publications"""
@@ -205,58 +508,34 @@ class DataIngestionPipeline:
         return None
 
     async def extract_papers(self, articles_data: List[Dict]) -> List[Article]:
-        """Extracción de artículos con múltiples estrategias de fallback"""
+        """Extracción de artículos con integración LLM"""
         extracted_articles = []
-        semaphore = asyncio.Semaphore(2)  # Extremadamente conservador
+        semaphore = asyncio.Semaphore(1)  # Muy conservador para LLMs
 
         # Mezclar orden para evitar patrones
         articles_data = articles_data.copy()
         random.shuffle(articles_data)
 
-        blocked_count = 0
-        max_blocked_before_fallback = 3
-
         async def extract_single_article_wrapper(article_data):
-            nonlocal blocked_count
-
             async with semaphore:
                 try:
-                    # Delay aleatorio más largo
-                    delay = random.uniform(self.request_delay, self.request_delay * 2.5)
+                    # Delay para respetar rate limits
+                    delay = random.uniform(5, 10)  # Más tiempo por LLM calls
                     await asyncio.sleep(delay)
 
-                    # Intentar múltiples estrategias
-                    article = await self.extract_with_fallbacks(article_data)
-
-                    if article:
-                        return article
-                    else:
-                        # Si falla, incrementar contador de bloqueos
-                        blocked_count += 1
-
-                except aiohttp.ClientResponseError as e:
-                    if e.status == 403:
-                        logger.warning(f"403 Forbidden: {article_data.get('url', '')}")
-                        blocked_count += 1
-                        # Esperar más tiempo después de 403
-                        await asyncio.sleep(random.uniform(10, 20))
+                    article = await self.extract_with_llm_and_fallbacks(article_data)
+                    return article
 
                 except Exception as e:
                     logger.error(f"Error extrayendo {article_data.get('title', 'Sin título')}: {e}")
                     self.failed_extractions.append(article_data)
-
-                return None
+                    return None
 
         # Procesamiento en lotes muy pequeños
-        batch_size = 3
+        batch_size = 2  # Reducido para LLM processing
         for i in range(0, len(articles_data), batch_size):
             batch = articles_data[i:i + batch_size]
             logger.info(f"Procesando lote {i // batch_size + 1}/{(len(articles_data) + batch_size - 1) // batch_size}")
-
-            # Si hemos sido bloqueados demasiado, cambiar a modo fallback
-            if blocked_count >= max_blocked_before_fallback:
-                logger.warning(f"Demasiados bloqueos ({blocked_count}), cambiando a modo fallback")
-                break
 
             tasks = [extract_single_article_wrapper(data) for data in batch]
             results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -267,234 +546,124 @@ class DataIngestionPipeline:
                 elif isinstance(result, Exception):
                     logger.error(f"Excepción en lote: {result}")
 
-            # Pausa más larga entre lotes
+            # Pausa más larga entre lotes para LLM rate limits
             if i + batch_size < len(articles_data):
-                batch_delay = random.uniform(8, 15)
+                batch_delay = random.uniform(15, 25)
                 logger.info(f"Esperando {batch_delay:.1f}s entre lotes...")
                 await asyncio.sleep(batch_delay)
 
-        # Si no obtuvimos artículos y estamos en modo test, crear artículos de prueba
-        if len(extracted_articles) == 0 and self.test_mode:
-            logger.info("No se pudieron extraer artículos reales, creando artículos de prueba...")
-            extracted_articles = self.create_test_articles(articles_data[:5])
-
         logger.info(f"Extraídos {len(extracted_articles)} artículos exitosamente")
         logger.info(f"Fallaron {len(self.failed_extractions)} extracciones")
-        logger.info(f"Total bloqueos 403: {blocked_count}")
+
+        # Estadísticas LLM
+        llm_extracted = sum(1 for a in extracted_articles if a.llm_extracted)
+        logger.info(f"Artículos extraídos con LLM: {llm_extracted}/{len(extracted_articles)}")
 
         return extracted_articles
 
-    async def extract_with_fallbacks(self, article_data: Dict) -> Optional[Article]:
-        """Intenta extraer artículo con múltiples estrategias de fallback"""
+    async def extract_with_llm_and_fallbacks(self, article_data: Dict) -> Optional[Article]:
+        """Extrae artículo con LLM como método principal y fallbacks tradicionales"""
+
         url = article_data.get('url', '')
         title = article_data.get('title', '')
+
+        # Primer paso: Obtener contenido HTML
+        article_text = await self.fetch_article_content(url)
+
+        if not article_text and not title:
+            return None
+
+        # Método principal: Extracción con LLM
+        if self.llm_enabled and (article_text or title):
+            try:
+                text_for_llm = article_text or title
+                llm_article = await self.llm_extractor.extract_with_llm(text_for_llm, article_data)
+                if llm_article and llm_article.quality_score > 0.3:
+                    logger.info(f"Extracción LLM exitosa: {title[:50]}...")
+                    return llm_article
+            except Exception as e:
+                logger.warning(f"Extracción LLM falló para {title[:50]}...: {e}")
+
+        # Fallback 1: APIs públicas (PMC, PubMed)
         pmcid = article_data.get('pmcid')
+        if pmcid:
+            api_article = await self.try_pubmed_central_api(pmcid, title, url)
+            if api_article:
+                api_article.extraction_source = "pmc_api_fallback"
+                return api_article
 
-        # Estrategia 1: Intentar APIs públicas primero
-        if pmcid and self.api_fallback_enabled:
-            article = await self.try_pubmed_central_api(pmcid, title, url)
-            if article:
-                article.extraction_source = "pmc_api"
-                return article
+        # Fallback 2: Extracción básica de HTML
+        if article_text:
+            basic_article = await self.basic_html_extraction(article_text, article_data)
+            if basic_article:
+                basic_article.extraction_source = "html_fallback"
+                return basic_article
 
-        # Estrategia 2: Intentar con diferentes User-Agents
-        article = await self.try_different_user_agents(article_data)
-        if article:
-            article.extraction_source = "web_scraping_alt"
-            return article
-
-        # Estrategia 3: Crear artículo básico con metadatos disponibles
+        # Fallback 3: Artículo mínimo
         if self.test_mode:
             return self.create_minimal_article(article_data)
 
         return None
 
-    async def try_pubmed_central_api(self, pmcid: str, title: str, url: str) -> Optional[Article]:
-        """Intenta extraer usando APIs públicas de PMC"""
+    async def fetch_article_content(self, url: str) -> Optional[str]:
+        """Obtiene contenido del artículo desde URL"""
         try:
-            # API de PMC para obtener metadatos
-            api_base = "https://www.ncbi.nlm.nih.gov/research/bionlp/RESTful/pmcoa.cgi"
-            api_url = f"{api_base}/BioC_json/{pmcid}/unicode"
-
-            # Delay específico para API
-            await asyncio.sleep(1)
-
-            async with self.session.get(api_url) as response:
+            async with self.session.get(url) as response:
                 if response.status == 200:
-                    api_data = await response.json()
-                    article = self.parse_pmc_api_response(api_data, title, url, pmcid)
-                    if article:
-                        logger.info(f"Extraído exitosamente via API PMC: {pmcid}")
-                        return article
+                    html_content = await response.text()
+                    soup = BeautifulSoup(html_content, 'html.parser')
+
+                    # Extraer texto relevante
+                    text_content = self.extract_text_from_soup(soup)
+                    return text_content
+                else:
+                    logger.warning(f"Error HTTP {response.status} para {url}")
 
         except Exception as e:
-            logger.debug(f"API de PMC falló para {pmcid}: {e}")
-
-        # Fallback: Intentar API de PubMed si tenemos PMID
-        try:
-            pmid = await self.get_pmid_from_pmcid(pmcid)
-            if pmid:
-                return await self.try_pubmed_api(pmid, title, url)
-        except Exception as e:
-            logger.debug(f"Fallback PubMed falló: {e}")
+            logger.warning(f"Error obteniendo contenido de {url}: {e}")
 
         return None
 
-    async def get_pmid_from_pmcid(self, pmcid: str) -> Optional[str]:
-        """Obtiene PMID desde PMCID usando API de NCBI"""
+    def extract_text_from_soup(self, soup: BeautifulSoup) -> str:
+        """Extrae texto relevante del HTML"""
         try:
-            api_url = f"https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?ids={pmcid}&format=json"
-            await asyncio.sleep(0.5)  # Rate limiting
+            # Remover scripts y estilos
+            for script in soup(["script", "style", "nav", "footer", "header"]):
+                script.decompose()
 
-            async with self.session.get(api_url) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    records = data.get('records', [])
-                    if records:
-                        return records[0].get('pmid')
-        except Exception as e:
-            logger.debug(f"Error obteniendo PMID para {pmcid}: {e}")
+            # Buscar secciones principales del artículo
+            main_content = ""
 
-        return None
+            # Intentar abstract
+            for selector in ['.abstract', '#abstract', '.article-abstract', '.summary']:
+                element = soup.select_one(selector)
+                if element:
+                    main_content += f"Abstract: {element.get_text().strip()}\n\n"
+                    break
 
-    async def try_pubmed_api(self, pmid: str, title: str, url: str) -> Optional[Article]:
-        """Intenta extraer usando API de PubMed"""
-        try:
-            api_url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={pmid}&retmode=xml"
-            await asyncio.sleep(1)  # Rate limiting para NCBI
+            # Intentar contenido principal
+            for selector in ['.article-content', '.main-content', '.content', 'main', 'article']:
+                element = soup.select_one(selector)
+                if element:
+                    content_text = element.get_text().strip()
+                    if len(content_text) > 500:
+                        main_content += content_text[:3000]  # Limitar para LLM
+                        break
 
-            async with self.session.get(api_url) as response:
-                if response.status == 200:
-                    xml_content = await response.text()
-                    article = self.parse_pubmed_xml(xml_content, title, url)
-                    if article:
-                        article.pmid = pmid
-                        logger.info(f"Extraído exitosamente via API PubMed: {pmid}")
-                        return article
+            # Si no encuentra contenido específico, usar body
+            if not main_content.strip():
+                body = soup.find('body')
+                if body:
+                    main_content = body.get_text()[:3000]
 
-        except Exception as e:
-            logger.debug(f"API de PubMed falló para {pmid}: {e}")
-
-        return None
-
-    def parse_pmc_api_response(self, api_data: Dict, title: str, url: str, pmcid: str) -> Optional[Article]:
-        """Parsea respuesta de la API de PMC"""
-        try:
-            article = Article(title=title, url=url, pmcid=pmcid)
-
-            if 'documents' in api_data:
-                abstract_text = ""
-                full_text_parts = []
-
-                for doc in api_data['documents']:
-                    if 'passages' in doc:
-                        for passage in doc['passages']:
-                            passage_type = passage.get('infons', {}).get('type', '')
-                            passage_text = passage.get('text', '')
-
-                            if 'abstract' in passage_type.lower():
-                                abstract_text += passage_text + " "
-                            else:
-                                full_text_parts.append(passage_text)
-
-                if abstract_text.strip():
-                    article.abstract = abstract_text.strip()
-
-                if full_text_parts:
-                    article.full_text = "\n".join(full_text_parts)
-
-            # Extraer información básica desde el título
-            article.organisms = self.extract_basic_organisms(title + " " + (article.abstract or ""))
-            article.keywords = self.extract_basic_keywords(title + " " + (article.abstract or ""))
-
-            article.quality_score = self.calculate_quality_score(article)
-            return article if article.quality_score > 0.2 else None
+            return main_content.strip()
 
         except Exception as e:
-            logger.error(f"Error parseando respuesta API PMC: {e}")
-            return None
+            logger.error(f"Error extrayendo texto de HTML: {e}")
+            return ""
 
-    def parse_pubmed_xml(self, xml_content: str, title: str, url: str) -> Optional[Article]:
-        """Parsea XML de PubMed"""
-        try:
-            root = ET.fromstring(xml_content)
-            article = Article(title=title, url=url)
-
-            # Extraer información del XML
-            for article_elem in root.findall('.//Article'):
-                # Journal
-                journal_elem = article_elem.find('.//Journal/Title')
-                if journal_elem is not None:
-                    article.journal = journal_elem.text
-
-                # Abstract
-                abstract_elem = article_elem.find('.//Abstract/AbstractText')
-                if abstract_elem is not None:
-                    article.abstract = abstract_elem.text
-
-                # Autores
-                authors = []
-                for author_elem in article_elem.findall('.//Author'):
-                    lastname = author_elem.find('LastName')
-                    forename = author_elem.find('ForeName')
-                    if lastname is not None and forename is not None:
-                        authors.append({
-                            'name': f"{forename.text} {lastname.text}",
-                            'affiliation': None
-                        })
-                article.authors = authors
-
-                # Keywords
-                keywords = []
-                for keyword_elem in article_elem.findall('.//Keyword'):
-                    if keyword_elem.text:
-                        keywords.append(keyword_elem.text)
-                article.keywords = keywords
-
-            article.quality_score = self.calculate_quality_score(article)
-            return article if article.quality_score > 0.2 else None
-
-        except Exception as e:
-            logger.error(f"Error parseando XML PubMed: {e}")
-            return None
-
-    async def try_different_user_agents(self, article_data: Dict) -> Optional[Article]:
-        """Intenta con diferentes User-Agents"""
-        alternative_agents = [
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0'
-        ]
-
-        url = article_data.get('url', '')
-
-        for agent in alternative_agents:
-            try:
-                headers = self.headers.copy()
-                headers['User-Agent'] = agent
-
-                await asyncio.sleep(random.uniform(5, 10))  # Delay largo
-
-                async with self.session.get(url, headers=headers) as response:
-                    if response.status == 200:
-                        html_content = await response.text()
-                        soup = BeautifulSoup(html_content, 'html.parser')
-
-                        article = self.extract_from_soup(soup, article_data)
-                        if article:
-                            logger.info(f"Éxito con User-Agent alternativo: {url}")
-                            return article
-                    else:
-                        logger.debug(f"User-Agent alternativo falló: {response.status}")
-
-            except Exception as e:
-                logger.debug(f"Error con User-Agent alternativo: {e}")
-                continue
-
-        return None
-
-    def extract_from_soup(self, soup: BeautifulSoup, article_data: Dict) -> Optional[Article]:
-        """Extrae información básica de BeautifulSoup"""
+    async def basic_html_extraction(self, article_text: str, article_data: Dict) -> Optional[Article]:
+        """Extracción básica de HTML sin LLM"""
         try:
             article = Article(
                 title=article_data.get('title', ''),
@@ -502,83 +671,31 @@ class DataIngestionPipeline:
                 pmcid=article_data.get('pmcid')
             )
 
-            # Extraer metadatos básicos
-            article.doi = self.extract_doi_from_soup(soup)
-            article.journal = self.extract_journal(soup)
-            article.abstract = self.extract_abstract(soup)
+            # Usar texto como abstract si es corto
+            if len(article_text) < 1000:
+                article.abstract = article_text
+            else:
+                # Intentar extraer abstract del texto
+                lines = article_text.split('\n')
+                for line in lines:
+                    if 'abstract' in line.lower() and len(line) > 100:
+                        article.abstract = line
+                        break
 
-            # Si no hay abstract, intentar extraer del texto visible
-            if not article.abstract:
-                text = soup.get_text()
-                if len(text) > 200:
-                    article.abstract = text[:500] + "..."
+                if not article.abstract:
+                    article.abstract = article_text[:500] + "..."
+
+            # Extracción básica de entidades
+            article.organisms = self.extract_basic_organisms(article_text)
+            article.keywords = self.extract_basic_keywords(article_text)
+            article.conditions = self.extract_basic_conditions(article_text)
 
             article.quality_score = self.calculate_quality_score(article)
             return article if article.quality_score > 0.2 else None
 
         except Exception as e:
-            logger.error(f"Error extrayendo de soup: {e}")
+            logger.error(f"Error en extracción básica HTML: {e}")
             return None
-
-    def create_minimal_article(self, article_data: Dict) -> Article:
-        """Crea artículo mínimo con datos disponibles"""
-        article = Article(
-            title=article_data.get('title', ''),
-            url=article_data.get('url', ''),
-            pmcid=article_data.get('pmcid')
-        )
-
-        # Extraer información básica del título
-        article.abstract = f"Research article: {article.title}"
-        article.organisms = self.extract_basic_organisms(article.title)
-        article.keywords = self.extract_basic_keywords(article.title)
-        article.extraction_source = "minimal_metadata"
-
-        article.quality_score = self.calculate_quality_score(article)
-        return article
-
-    def create_test_articles(self, articles_data: List[Dict]) -> List[Article]:
-        """Crea artículos de prueba cuando falla todo"""
-        test_articles = []
-
-        for i, data in enumerate(articles_data):
-            article = Article(
-                title=data.get('title', f'Test Article {i + 1}'),
-                url=data.get('url', ''),
-                pmcid=data.get('pmcid')
-            )
-
-            # Generar contenido simulado basado en título real
-            title_lower = article.title.lower()
-
-            # Abstract simulado
-            article.abstract = f"This study investigates {article.title.lower()}. "
-            if 'microgravity' in title_lower or 'space' in title_lower:
-                article.abstract += "The research focuses on the effects of microgravity on biological systems. "
-            if 'cell' in title_lower:
-                article.abstract += "Cell culture experiments were conducted under simulated space conditions. "
-
-            # Metadatos simulados
-            article.journal = "Journal of Space Biology Research"
-            article.publication_date = datetime(2023, random.randint(1, 12), random.randint(1, 28))
-            article.authors = [
-                {'name': f'Researcher {i + 1}A', 'affiliation': 'Space Biology Institute'},
-                {'name': f'Researcher {i + 1}B', 'affiliation': 'Microgravity Research Center'}
-            ]
-
-            # Entidades biológicas basadas en título
-            article.organisms = self.extract_basic_organisms(article.title + " " + article.abstract)
-            article.keywords = self.extract_basic_keywords(article.title + " " + article.abstract)
-            article.conditions = ['microgravity', 'space environment']
-            article.experiments = ['cell culture', 'gene expression']
-
-            article.extraction_source = "test_data"
-            article.quality_score = 0.6
-
-            test_articles.append(article)
-
-        logger.info(f"Creados {len(test_articles)} artículos de prueba")
-        return test_articles
 
     def extract_basic_organisms(self, text: str) -> List[str]:
         """Extrae organismos básicos del texto"""
@@ -611,74 +728,109 @@ class DataIngestionPipeline:
             if keyword in text_lower:
                 keywords.append(keyword)
 
-        # Extraer keywords técnicas
-        bio_keywords = [
-            'gene expression', 'protein', 'cell culture', 'tissue',
-            'metabolism', 'DNA', 'RNA', 'genome', 'proteome'
-        ]
-
-        for keyword in bio_keywords:
-            if keyword in text_lower:
-                keywords.append(keyword)
-
         return list(set(keywords))
 
-    # Métodos de extracción básicos (simplificados)
-    def extract_doi_from_soup(self, soup: BeautifulSoup) -> Optional[str]:
-        """Extrae DOI del HTML"""
-        meta_doi = soup.find('meta', {'name': 'citation_doi'})
-        if meta_doi:
-            return meta_doi.get('content')
+    def extract_basic_conditions(self, text: str) -> List[str]:
+        """Extrae condiciones experimentales básicas"""
+        conditions = []
+        condition_keywords = [
+            'microgravity', 'simulated microgravity', 'centrifuge',
+            'space environment', 'radiation exposure', 'isolation',
+            'confined space', 'altered gravity'
+        ]
 
-        # Buscar patrón DOI en texto
-        doi_pattern = r'10\.\d{4,}[^\s]*'
-        text = soup.get_text()
-        doi_match = re.search(doi_pattern, text)
-        if doi_match:
-            return doi_match.group()
+        text_lower = text.lower()
+        for condition in condition_keywords:
+            if condition in text_lower:
+                conditions.append(condition)
 
-        return None
+        return list(set(conditions))
 
-    def extract_journal(self, soup: BeautifulSoup) -> Optional[str]:
-        """Extrae nombre del journal"""
-        meta_journal = soup.find('meta', {'name': 'citation_journal_title'})
-        if meta_journal:
-            return meta_journal.get('content')
+    async def try_pubmed_central_api(self, pmcid: str, title: str, url: str) -> Optional[Article]:
+        """Intenta extraer usando APIs públicas de PMC"""
+        try:
+            api_base = "https://www.ncbi.nlm.nih.gov/research/bionlp/RESTful/pmcoa.cgi"
+            api_url = f"{api_base}/BioC_json/{pmcid}/unicode"
 
-        # Buscar en elementos comunes
-        for selector in ['.journal-title', '.journal-name', 'h1.journal']:
-            element = soup.select_one(selector)
-            if element:
-                return element.get_text().strip()
+            await asyncio.sleep(1)
 
-        return None
+            async with self.session.get(api_url) as response:
+                if response.status == 200:
+                    api_data = await response.json()
+                    article = self.parse_pmc_api_response(api_data, title, url, pmcid)
+                    if article:
+                        logger.info(f"Extraído exitosamente via API PMC: {pmcid}")
+                        return article
 
-    def extract_abstract(self, soup: BeautifulSoup) -> Optional[str]:
-        """Extrae abstract del artículo"""
-        for selector in ['.abstract', '#abstract', '.article-abstract', '.summary']:
-            element = soup.select_one(selector)
-            if element:
-                abstract = element.get_text().strip()
-                if len(abstract) > 50:
-                    return abstract[:1000]  # Limitar longitud
+        except Exception as e:
+            logger.debug(f"API de PMC falló para {pmcid}: {e}")
 
         return None
+
+    def parse_pmc_api_response(self, api_data: Dict, title: str, url: str, pmcid: str) -> Optional[Article]:
+        """Parsea respuesta de la API de PMC"""
+        try:
+            article = Article(title=title, url=url, pmcid=pmcid)
+
+            if 'documents' in api_data:
+                abstract_text = ""
+                full_text_parts = []
+
+                for doc in api_data['documents']:
+                    if 'passages' in doc:
+                        for passage in doc['passages']:
+                            passage_type = passage.get('infons', {}).get('type', '')
+                            passage_text = passage.get('text', '')
+
+                            if 'abstract' in passage_type.lower():
+                                abstract_text += passage_text + " "
+                            else:
+                                full_text_parts.append(passage_text)
+
+                if abstract_text.strip():
+                    article.abstract = abstract_text.strip()
+
+                if full_text_parts:
+                    article.full_text = "\n".join(full_text_parts)
+
+            article.organisms = self.extract_basic_organisms(title + " " + (article.abstract or ""))
+            article.keywords = self.extract_basic_keywords(title + " " + (article.abstract or ""))
+
+            article.quality_score = self.calculate_quality_score(article)
+            return article if article.quality_score > 0.2 else None
+
+        except Exception as e:
+            logger.error(f"Error parseando respuesta API PMC: {e}")
+            return None
+
+    def create_minimal_article(self, article_data: Dict) -> Article:
+        """Crea artículo mínimo con datos disponibles"""
+        article = Article(
+            title=article_data.get('title', ''),
+            url=article_data.get('url', ''),
+            pmcid=article_data.get('pmcid')
+        )
+
+        article.abstract = f"Research article: {article.title}"
+        article.organisms = self.extract_basic_organisms(article.title)
+        article.keywords = self.extract_basic_keywords(article.title)
+        article.extraction_source = "minimal_metadata"
+
+        article.quality_score = self.calculate_quality_score(article)
+        return article
 
     def calculate_quality_score(self, article: Article) -> float:
         """Calcula score de calidad del artículo"""
         score = 0.0
 
-        # Título (obligatorio)
         if article.title and len(article.title) > 10:
             score += 0.3
 
-        # Abstract o contenido
         if article.abstract and len(article.abstract) > 50:
             score += 0.3
         elif article.full_text and len(article.full_text) > 100:
             score += 0.2
 
-        # Metadatos
         if article.pmid or article.pmcid:
             score += 0.1
         if article.doi:
@@ -690,12 +842,16 @@ class DataIngestionPipeline:
         if article.keywords or article.organisms:
             score += 0.1
 
+        # Bonus para extracciones LLM exitosas
+        if article.llm_extracted and article.llm_confidence_score > 0.7:
+            score += 0.1
+
         return min(score, 1.0)
 
     def validate_data_quality(self, articles: List[Article]) -> List[Article]:
-        """Validación de calidad de datos con criterios más permisivos"""
+        """Validación de calidad de datos"""
         validated_articles = []
-        quality_threshold = 0.2  # Umbral muy bajo para modo de prueba
+        quality_threshold = 0.2
 
         for article in articles:
             article.quality_score = self.calculate_quality_score(article)
@@ -710,11 +866,9 @@ class DataIngestionPipeline:
 
     def is_valid_article(self, article: Article) -> bool:
         """Valida si un artículo cumple criterios mínimos"""
-        # Debe tener título
         if not article.title or len(article.title.strip()) < 5:
             return False
 
-        # Debe tener URL válida o ser artículo de prueba
         if not article.url and article.extraction_source != "test_data":
             return False
 
@@ -725,7 +879,6 @@ class DataIngestionPipeline:
         standardized_articles = []
 
         for article in articles:
-            # Remover duplicados
             if not self.duplicate_detector.is_duplicate(article):
                 json_ld = self.convert_to_json_ld(article)
                 rdf_triples = self.convert_to_rdf(article)
@@ -762,10 +915,11 @@ class DataIngestionPipeline:
             "@type": "schema:ScholarlyArticle",
             "schema:name": article.title,
             "schema:url": article.url or "",
-            "extraction_source": article.extraction_source
+            "extraction_source": article.extraction_source,
+            "llm_extracted": article.llm_extracted,
+            "llm_confidence_score": article.llm_confidence_score
         }
 
-        # Campos opcionales
         if article.publication_date:
             json_ld["dcterms:created"] = article.publication_date.isoformat()
         if article.abstract:
@@ -778,7 +932,6 @@ class DataIngestionPipeline:
                 "schema:name": article.journal
             }
 
-        # Autores
         if article.authors:
             authors_list = []
             for author in article.authors:
@@ -794,7 +947,6 @@ class DataIngestionPipeline:
                 authors_list.append(author_obj)
             json_ld["schema:author"] = authors_list
 
-        # Identificadores
         identifiers = []
         if article.doi:
             identifiers.append({
@@ -817,7 +969,6 @@ class DataIngestionPipeline:
         if identifiers:
             json_ld["schema:identifier"] = identifiers
 
-        # Keywords y términos MeSH
         if article.keywords:
             json_ld["schema:keywords"] = article.keywords
         if article.mesh_terms:
@@ -839,7 +990,6 @@ class DataIngestionPipeline:
 
         article_uri = URIRef(self.generate_article_id(article))
 
-        # Triplas básicas
         g.add((article_uri, RDF.type, SCHEMA.ScholarlyArticle))
         g.add((article_uri, SCHEMA.name, Literal(article.title)))
         if article.url:
@@ -852,7 +1002,11 @@ class DataIngestionPipeline:
         if article.publication_date:
             g.add((article_uri, DCTERMS.created, Literal(article.publication_date)))
 
-        # Journal
+        # Agregar información específica de LLM
+        g.add((article_uri, SPACE.llmExtracted, Literal(article.llm_extracted)))
+        if article.llm_confidence_score > 0:
+            g.add((article_uri, SPACE.llmConfidenceScore, Literal(article.llm_confidence_score)))
+
         if article.journal:
             journal_uri = URIRef(
                 f"http://space-biology.org/journal/{hashlib.md5(article.journal.encode()).hexdigest()}")
@@ -860,7 +1014,6 @@ class DataIngestionPipeline:
             g.add((journal_uri, SCHEMA.name, Literal(article.journal)))
             g.add((article_uri, SCHEMA.isPartOf, journal_uri))
 
-        # Autores
         for author in article.authors:
             author_uri = URIRef(
                 f"http://space-biology.org/author/{hashlib.md5(author.get('name', '').encode()).hexdigest()}")
@@ -875,7 +1028,6 @@ class DataIngestionPipeline:
                 g.add((affil_uri, SCHEMA.name, Literal(author['affiliation'])))
                 g.add((author_uri, SCHEMA.affiliation, affil_uri))
 
-        # Identificadores
         if article.doi:
             g.add((article_uri, SCHEMA.doi, Literal(article.doi)))
         if article.pmid:
@@ -883,21 +1035,12 @@ class DataIngestionPipeline:
         if article.pmcid:
             g.add((article_uri, BIO.pmcid, Literal(article.pmcid)))
 
-        # Keywords
         for keyword in (article.keywords or []):
             keyword_uri = URIRef(f"http://space-biology.org/keyword/{hashlib.md5(keyword.encode()).hexdigest()}")
             g.add((keyword_uri, RDF.type, SCHEMA.DefinedTerm))
             g.add((keyword_uri, SCHEMA.name, Literal(keyword)))
             g.add((article_uri, SCHEMA.keywords, keyword_uri))
 
-        # MeSH terms
-        for mesh_term in (article.mesh_terms or []):
-            mesh_uri = URIRef(f"http://space-biology.org/mesh/{hashlib.md5(mesh_term.encode()).hexdigest()}")
-            g.add((mesh_uri, RDF.type, BIO.MeshTerm))
-            g.add((mesh_uri, SCHEMA.name, Literal(mesh_term)))
-            g.add((article_uri, BIO.hasMeshTerm, mesh_uri))
-
-        # Entidades biológicas
         for organism in (article.organisms or []):
             organism_uri = URIRef(f"http://space-biology.org/organism/{hashlib.md5(organism.encode()).hexdigest()}")
             g.add((organism_uri, RDF.type, BIO.Organism))
@@ -928,7 +1071,9 @@ class DataIngestionPipeline:
                 'date': article.publication_date.isoformat() if article.publication_date else None,
                 'journal': article.journal,
                 'quality_score': article.quality_score,
-                'extraction_source': article.extraction_source
+                'extraction_source': article.extraction_source,
+                'llm_extracted': article.llm_extracted,
+                'llm_confidence_score': article.llm_confidence_score
             },
             'Authors': [
                 {
@@ -958,7 +1103,6 @@ class DuplicateDetector:
 
     def is_duplicate(self, article: Article) -> bool:
         """Determina si un artículo es duplicado"""
-        # Check por identificadores únicos
         if article.doi and article.doi in self.seen_articles:
             return True
         if article.pmid and article.pmid in self.seen_articles:
@@ -966,7 +1110,6 @@ class DuplicateDetector:
         if article.pmcid and article.pmcid in self.seen_articles:
             return True
 
-        # Check por similitud de título
         for existing_title in self.seen_titles:
             similarity = fuzz.ratio(article.title.lower(), existing_title.lower())
             if similarity >= self.similarity_threshold:
@@ -991,7 +1134,6 @@ class BiologyNLPProcessor:
     """Procesador NLP especializado en biología espacial"""
 
     def __init__(self):
-        # Diccionarios de entidades biológicas específicas
         self.space_biology_entities = {
             'organisms': {
                 'human', 'mouse', 'mice', 'rat', 'drosophila', 'arabidopsis',
@@ -1016,7 +1158,6 @@ class BiologyNLPProcessor:
             }
         }
 
-        # Patrones de expresiones regulares
         self.entity_patterns = {
             'genes': r'\b[A-Z][A-Z0-9]{2,}(?:-[A-Z0-9]+)?\b',
             'proteins': r'\b[A-Z][a-z]+(?:-\d+)?(?:\s+[A-Z][a-z]*)*\b',
@@ -1024,13 +1165,17 @@ class BiologyNLPProcessor:
         }
 
     async def process_articles(self, articles: List[Article]) -> List[Article]:
-        """Procesa lista de artículos con NLP"""
+        """Procesa lista de artículos con NLP adicional para artículos no LLM"""
         processed_articles = []
 
         for article in articles:
             try:
-                processed_article = await self.process_single_article(article)
-                processed_articles.append(processed_article)
+                # Solo aplicar NLP adicional si no fue extraído por LLM
+                if not article.llm_extracted:
+                    processed_article = await self.process_single_article(article)
+                    processed_articles.append(processed_article)
+                else:
+                    processed_articles.append(article)
                 logger.info(f"Procesado NLP: {article.title[:50]}...")
             except Exception as e:
                 logger.error(f"Error procesando NLP en artículo {article.title}: {e}")
@@ -1040,20 +1185,17 @@ class BiologyNLPProcessor:
 
     async def process_single_article(self, article: Article) -> Article:
         """Procesa un artículo individual con NLP"""
-        # Combinar texto disponible
         text_to_process = ""
         if article.abstract:
             text_to_process += article.abstract + " "
         if article.full_text:
-            text_to_process += article.full_text[:3000]  # Limitar para eficiencia
+            text_to_process += article.full_text[:3000]
 
         if not text_to_process.strip():
             return article
 
-        # Extraer entidades
         entities = await self.extract_entities(text_to_process)
 
-        # Asignar entidades extraídas
         article.organisms.extend(entities.get('organisms', []))
         article.genes.extend(entities.get('genes', []))
         article.proteins.extend(entities.get('proteins', []))
@@ -1062,12 +1204,8 @@ class BiologyNLPProcessor:
         article.measurements.extend(entities.get('measurements', []))
 
         # Remover duplicados
-        article.organisms = list(set(article.organisms))
-        article.genes = list(set(article.genes))
-        article.proteins = list(set(article.proteins))
-        article.conditions = list(set(article.conditions))
-        article.experiments = list(set(article.experiments))
-        article.measurements = list(set(article.measurements))
+        for field in ['organisms', 'genes', 'proteins', 'conditions', 'experiments', 'measurements']:
+            setattr(article, field, list(set(getattr(article, field))))
 
         return article
 
@@ -1084,46 +1222,58 @@ class BiologyNLPProcessor:
 
         text_lower = text.lower()
 
-        # Extraer organismos
         for organism in self.space_biology_entities['organisms']:
             if organism in text_lower:
                 entities['organisms'].append(organism)
 
-        # Extraer condiciones espaciales
         for condition in self.space_biology_entities['space_conditions']:
             if condition in text_lower:
                 entities['conditions'].append(condition)
 
-        # Extraer sistemas biológicos
         for system in self.space_biology_entities['biological_systems']:
             if system in text_lower:
                 entities['conditions'].append(system)
 
-        # Extraer experimentos
         for experiment in self.space_biology_entities['experiments']:
             if experiment in text_lower:
                 entities['experiments'].append(experiment)
 
-        # Usar regex para genes y proteínas
         gene_matches = re.findall(self.entity_patterns['genes'], text)
         entities['genes'].extend(gene_matches[:10])
 
         protein_matches = re.findall(self.entity_patterns['proteins'], text)
         entities['proteins'].extend(protein_matches[:10])
 
-        # Extraer mediciones numéricas
         measurement_matches = re.findall(self.entity_patterns['measurements'], text)
         entities['measurements'].extend(measurement_matches[:15])
 
         return entities
 
 
-# Función principal mejorada
+# Función principal mejorada con integración LLM
 async def main():
-    """Función principal para ejecutar el pipeline completo"""
-    logger.info("Iniciando pipeline de ingesta de biología espacial...")
+    """Función principal para ejecutar el pipeline completo con LLM"""
+    logger.info("Iniciando pipeline de ingesta de biología espacial con integración LLM...")
 
-    # Construir ruta al CSV
+    # Verificar configuración de LLMs
+    logger.info("Verificando configuración de APIs LLM...")
+    available_llms = []
+    for provider, config in {
+        'DEEPSEEK_API_KEY': 'DeepSeek',
+        'GROQ_API_KEY': 'Groq',
+        'TOGETHER_API_KEY': 'Together AI',
+        'PERPLEXITY_API_KEY': 'Perplexity'
+    }.items():
+        if os.getenv(provider):
+            available_llms.append(config)
+        else:
+            logger.warning(f"API key no configurada para {config}: {provider}")
+
+    if available_llms:
+        logger.info(f"LLMs disponibles: {', '.join(available_llms)}")
+    else:
+        logger.warning("No hay APIs LLM configuradas. El pipeline usará métodos de fallback.")
+
     try:
         BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     except NameError:
@@ -1143,21 +1293,21 @@ async def main():
                 logger.error("No se pudieron cargar datos del CSV")
                 return
 
-            # Procesar muestra pequeña para testing
-            test_size = min(10, len(articles_data))
+            # Procesar muestra para testing
+            test_size = min(5, len(articles_data))  # Reducido por uso de LLM
             articles_data = articles_data[:test_size]
-            logger.info(f"Procesando {test_size} artículos para testing")
+            logger.info(f"Procesando {test_size} artículos para testing con LLM")
 
-            # 2. Extraer artículos
-            logger.info("Extrayendo artículos...")
+            # 2. Extraer artículos con LLM
+            logger.info("Extrayendo artículos con integración LLM...")
             extracted_articles = await pipeline.extract_papers(articles_data)
 
             # 3. Validar calidad
             logger.info("Validando calidad de datos...")
             validated_articles = pipeline.validate_data_quality(extracted_articles)
 
-            # 4. Procesamiento NLP
-            logger.info("Iniciando procesamiento NLP...")
+            # 4. Procesamiento NLP adicional
+            logger.info("Iniciando procesamiento NLP complementario...")
             nlp_processor = BiologyNLPProcessor()
             processed_articles = await nlp_processor.process_articles(validated_articles)
 
@@ -1168,49 +1318,71 @@ async def main():
             # 6. Guardar resultados
             logger.info("Guardando resultados...")
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            output_file = f"space_biology_articles_{timestamp}.json"
+            output_file = f"space_biology_articles_llm_{timestamp}.json"
 
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(standardized_articles, f, indent=2, ensure_ascii=False, default=str)
 
-            # Estadísticas finales
+            # Estadísticas finales mejoradas
             logger.info("=== ESTADÍSTICAS FINALES ===")
             logger.info(f"Artículos procesados: {len(standardized_articles)}")
             logger.info(f"Artículos fallidos: {len(pipeline.failed_extractions)}")
 
             if standardized_articles:
+                # Estadísticas por método de extracción
+                extraction_methods = {}
+                llm_extracted_count = 0
+                total_confidence = 0.0
+
+                for article in standardized_articles:
+                    article_data = article['article_data']
+                    source = article_data['extraction_source']
+                    extraction_methods[source] = extraction_methods.get(source, 0) + 1
+
+                    if article_data['llm_extracted']:
+                        llm_extracted_count += 1
+                        total_confidence += article_data['llm_confidence_score']
+
+                logger.info(f"Métodos de extracción: {extraction_methods}")
+                logger.info(f"Artículos extraídos con LLM: {llm_extracted_count}/{len(standardized_articles)}")
+
+                if llm_extracted_count > 0:
+                    avg_llm_confidence = total_confidence / llm_extracted_count
+                    logger.info(f"Confianza LLM promedio: {avg_llm_confidence:.2f}")
+
                 avg_quality = sum(
                     article['article_data']['quality_score']
                     for article in standardized_articles
                 ) / len(standardized_articles)
                 logger.info(f"Calidad promedio: {avg_quality:.2f}")
 
-                # Contar entidades por fuente
-                sources = {}
+                # Contar entidades extraídas
                 total_entities = 0
+                entity_types = {}
                 for article in standardized_articles:
-                    source = article['article_data']['extraction_source']
-                    sources[source] = sources.get(source, 0) + 1
+                    entities = article['graph_entities']
+                    for entity_type, entity_list in entities.items():
+                        if isinstance(entity_list, list):
+                            count = len(entity_list)
+                            entity_types[entity_type] = entity_types.get(entity_type, 0) + count
+                            total_entities += count
 
-                    entities_count = (
-                            len(article['graph_entities']['Organisms']) +
-                            len(article['graph_entities']['Genes']) +
-                            len(article['graph_entities']['Keywords']) +
-                            len(article['graph_entities']['Experiments'])
-                    )
-                    total_entities += entities_count
-
-                logger.info(f"Fuentes de extracción: {sources}")
                 logger.info(f"Total entidades extraídas: {total_entities}")
+                logger.info(f"Entidades por tipo: {entity_types}")
 
-                # Mostrar muestra
+                # Mostrar muestra mejorada
                 sample = standardized_articles[0]
+                article_sample = sample['article_data']
                 logger.info("\n=== MUESTRA DE RESULTADOS ===")
-                logger.info(f"Título: {sample['article_data']['title'][:80]}...")
-                logger.info(f"Fuente: {sample['article_data']['extraction_source']}")
-                logger.info(f"Calidad: {sample['article_data']['quality_score']:.2f}")
+                logger.info(f"Título: {article_sample['title'][:80]}...")
+                logger.info(f"Fuente: {article_sample['extraction_source']}")
+                logger.info(f"LLM extraído: {article_sample['llm_extracted']}")
+                if article_sample['llm_extracted']:
+                    logger.info(f"Confianza LLM: {article_sample['llm_confidence_score']:.2f}")
+                logger.info(f"Calidad: {article_sample['quality_score']:.2f}")
                 logger.info(f"Organismos: {sample['graph_entities']['Organisms']}")
                 logger.info(f"Keywords: {sample['graph_entities']['Keywords']}")
+                logger.info(f"Condiciones: {sample['graph_entities']['Conditions']}")
 
             logger.info(f"Resultados guardados en: {output_file}")
 
